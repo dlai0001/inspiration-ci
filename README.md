@@ -5,6 +5,8 @@
 
 Displays an inspirational poster image when builds are succeeding.  Project status are streamed in a carousel below.  When builds are running, only the running builds are displayed in the carousel.  When there is a failing build, the inspirational image disappears and you see a list of failing builds on a red background.
 
+![At the office](http://raw.githubusercontent.com/dlai0001/inspiration-ci/master/in_the_office.jpg)
+
 
 To setup:
 
