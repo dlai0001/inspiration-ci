@@ -1,0 +1,42 @@
+html,body {
+	height: 100%;
+	width: 100%;
+}
+
+
+.main {		
+	background-color: #990000; 
+	height: 100%;
+	width: 100%;
+	color: white;
+	text-align: center;
+}
+
+
+
+.main.success {
+	background-color: #003300;
+	color: white;
+}
+
+.center {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.carousel-inner > .item {
+    -webkit-transition: 5s linear left;
+    -moz-transition: 5s linear left;
+    -o-transition: 5s linear left;
+    transition: 5s linear left;
+}
+
+.build-status-box {		
+	border-bottom: 0.2em solid;
+	border-top: 0.2em solid;
+}
+
+.running-builds-img {
+	height: 5em;
+	width: 5em;
+}

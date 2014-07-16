@@ -16,6 +16,13 @@
     log('Connecting to Sails.js...');
   }
 
+  // Simple log function to keep the example simple
+  function log () {
+    if (typeof console !== 'undefined') {
+      console.log.apply(console, arguments);
+    }
+  }
+
   socket.on('connect', function socketConnected() {
 
     // Listen for Comet messages from Sails
@@ -32,6 +39,7 @@
     });
 
 
+
     ///////////////////////////////////////////////////////////
     // Here's where you'll want to add any custom logic for
     // when the browser establishes its socket connection to 
@@ -45,22 +53,12 @@
     );
     ///////////////////////////////////////////////////////////
 
-
   });
 
 
   // Expose connected `socket` instance globally so that it's easy
   // to experiment with from the browser console while prototyping.
   window.socket = socket;
-
-
-  // Simple log function to keep the example simple
-  function log () {
-    if (typeof console !== 'undefined') {
-      console.log.apply(console, arguments);
-    }
-  }
-  
 
 })(
 
@@ -69,3 +67,116 @@
   window.io
 
 );
+
+function updateTestStatus($scope) {
+  console.log("updating test state and status");
+
+  $scope.$apply(function() {
+    if(Object.keys($scope.runningBuilds).length == 0) {
+      $scope.testsRunning = false;
+    } else {
+      $scope.testsRunning = true;
+    }
+
+    if(Object.keys($scope.failingBuilds).length == 0) {
+      $scope.testsPassed = true;
+    } else {
+      $scope.testsPassed = false;
+    }
+
+  });
+  
+}
+
+// Add our main window after socket io has been initialized.
+window.MainCtrl = function($scope) {
+
+  $scope.testsPassed = true;
+  $scope.testsRunning = false;
+  $scope.inspirationalPic = "/images/success/success3.jpg";
+  
+  $scope.runningBuilds = {};
+  $scope.failingBuilds = {};
+  $scope.allBuilds = {};
+  
+
+  // socket is globalized by sails
+  socket.get('/build',{}, function (response) {
+  
+    // response === {success: true, message: 'hi there!'}
+    console.log("socket response:", response);
+
+    //create build models in an indexed array.
+    for(var i=0; i < response.length; i++) {
+      var buildInfo = response[i];
+      $scope.allBuilds[buildInfo.id] = buildInfo;
+
+      if(buildInfo.status !== "SUCCESS") {
+        $scope.failingBuilds[buildInfo.id] = buildInfo;
+      }
+
+      if(buildInfo.state === "running") {
+       $scope.runningBuilds[buildInfo.id] = buildInfo; 
+      }      
+    }
+    updateTestStatus($scope);
+    
+  });
+
+  socket.on("message", _.bind(function(data){
+    // Update our scope with our updated model.
+    console.log("where's here", data);
+
+    if(data.model === "build"){      
+      
+      var updatedBuildData = data.data;
+      console.log("build update received:", updatedBuildData);
+
+      $scope.allBuilds[updatedBuildData.id] = updatedBuildData;
+
+      //update runningBuilds
+      if(updatedBuildData.state === "running") {
+        if(typeof $scope.runningBuilds[updatedBuildData.id] == "undefined") {
+          console.log("detected a new running build.");
+          $scope.runningBuilds[updatedBuildData.id] = updatedBuildData;
+        }
+        else {
+          console.log("updating running build stats");
+          $scope.runningBuilds[updatedBuildData.id].version = updatedBuildData.version;
+          $scope.runningBuilds[updatedBuildData.id].state = updatedBuildData.state;
+          $scope.runningBuilds[updatedBuildData.id].status = updatedBuildData.status;
+          $scope.runningBuilds[updatedBuildData.id].percentComplete = updatedBuildData.percentComplete; 
+        }
+      } else {
+        delete $scope.runningBuilds[updatedBuildData.id];
+      }
+
+      if(updatedBuildData.status !== "SUCCESS") {
+        $scope.failingBuilds[updatedBuildData.id] = updatedBuildData;
+      } else {
+        delete $scope.failingBuilds[updatedBuildData.id];
+      }
+
+      updateTestStatus($scope);        
+      $scope.$digest();
+      
+    } //end if 'build'
+  }, this)); //end of handling build updates.
+
+
+  //change inspirational image every 30 seconds.
+  setInterval(function(){
+    $scope.$apply(function(){
+      updateInspirationalPoster($scope);
+    });    
+  }, 30000)
+};
+
+function updateInspirationalPoster($scope){
+  console.log("updating inspirational image");
+  socket.get('/images',{}, function (response) {
+    var randomIndex = Math.floor(Math.random() * response.successImages.length);
+    var newInspirationalImg = response.successImages[randomIndex];
+    $scope.inspirationalPic = newInspirationalImg;
+  });
+}

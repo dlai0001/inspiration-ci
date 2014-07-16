@@ -1,7 +1,86 @@
-<div>
-  <label>Name:</label>
-  <input type="text" ng-model="yourName" placeholder="Enter a name here">
-  <hr>
-  <h1>Hello {{yourName}}!</h1>
+<div class="main" ng-controller="MainCtrl" ng-class="{success: testsPassed}">
+
+	<div class="" ng-show="testsPassed">
+		<br/>
+    	<img class="col-lg-4 col-lg-offset-4" ng-src="{{inspirationalPic}}"/>    	
+
+		<!--  Carousel of all Tests when passing -->  
+        <div id="all-build-carousel" class="carousel slide" ng-show="!testsRunning"><!-- class of slide for animation -->
+            <div class="carousel-inner">
+            	<div class="active text-center item build-status-box">
+            		<h1>Inspiration CI<h1>
+            	</div>
+                <div class="text-center item build-status-box" ng-repeat="build in allBuilds">
+                	
+                    <h2>{{build.project}}</h2>
+                    <h1>{{build.name}}</h1>
+                    <h3><a href="{{build.webUrl}}" target="_new">
+                    	Build {{build.version}}
+                	</a></h3>
+                </div>
+                
+            </div><!-- /.carousel-inner -->
+        </div>
+        <script>
+  			$(document).ready(function(){  				
+    			$('#all-build-carousel').carousel({interval: 300});
+  			});
+		</script>
+		<!-- /Carousel -->
+    </div>
+
+    <!-- Failing Tests Display -->
+	<div ng-show="!testsPassed">
+    	<h1>Failing Builds</h1>
+
+    	<ul>
+    		<li ng-repeat="build in failingBuilds" class="build-status-box">    			
+    			<h2>{{build.project}}</h2>
+				<h1>{{build.name}}</h1>
+				<h3><a href="{{build.webUrl}}" target="_new">
+					Build {{build.version}}
+				</a></h3>    			
+    		</li>
+    	</ul>
+    </div>   
+
+	<!-- Running Tests     -->
+    <div ng-show="testsRunning">
+    	<!--  Carousel -->  
+        <div id="running-build-carousel" class="carousel slide"><!-- class of slide for animation -->
+            <div class="carousel-inner">
+            	<div class="active text-center item build-status-box">
+            		<h1>Running Builds<h1>
+            	</div>
+                <div class="text-center item build-status-box" ng-repeat="build in runningBuilds">
+                	<table class="center">
+                		<tr>
+                			<td>
+                				<img class="running-builds-img center" src="/images/loadingwheel.gif"></img>&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+                				<span class="center">{{build.percentComplete}}%</span>
+                			</td>
+                			<td>
+                				<h2>{{build.project}}</h2>
+			                    <h1>{{build.name}}</h1>
+			                    <h3><a href="{{build.webUrl}}" target="_new">
+			                    	Build {{build.version}}
+			                	</a></h3>
+                			</td>                			
+                		</tr>
+                	</table>                    
+                </div>
+                
+            </div><!-- /.carousel-inner -->
+        </div>
+        <script>
+  			$(document).ready(function(){  				
+    			$('#running-build-carousel').carousel({interval: 300});
+  			});
+		</script>
+		<!-- /Carousel -->    	
+    </div>
+
+ 
+
 </div>
 
