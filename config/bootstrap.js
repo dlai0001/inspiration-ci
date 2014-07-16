@@ -147,7 +147,8 @@ module.exports.bootstrap = function (cb) {
 							Build.findOne({id:currentBuild.buildTypeId}).exec(function(err, foundModel){
 								processedProjects[foundModel.id] = true;
 								
-								if(compareVersion(currentBuild.number, foundModel.version) >= 0) {									
+								if( foundModel.version == null ||
+									compareVersion(currentBuild.number, foundModel.version) >= 0) {									
 								
 									if( foundModel.status != currentBuild.status ||
 										foundModel.state != currentBuild.state ||
