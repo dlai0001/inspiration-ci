@@ -83,7 +83,7 @@ function updateTestStatus($scope) {
     } else {
       $scope.testsPassed = false;
     }
-
+    $scope.$digest();
   });
   
 }
