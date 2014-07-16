@@ -70,20 +70,18 @@
 
 function updateTestStatus($scope) {
   console.log("updating test state and status");
+  
+  if(Object.keys($scope.runningBuilds).length == 0) {
+    $scope.testsRunning = false;
+  } else {
+    $scope.testsRunning = true;
+  }
 
-  $scope.$apply(function() {
-    if(Object.keys($scope.runningBuilds).length == 0) {
-      $scope.testsRunning = false;
-    } else {
-      $scope.testsRunning = true;
-    }
-
-    if(Object.keys($scope.failingBuilds).length == 0) {
-      $scope.testsPassed = true;
-    } else {
-      $scope.testsPassed = false;
-    }    
-  });
+  if(Object.keys($scope.failingBuilds).length == 0) {
+    $scope.testsPassed = true;
+  } else {
+    $scope.testsPassed = false;
+  }
   
 }
 
@@ -101,65 +99,71 @@ window.MainCtrl = function($scope) {
 
   // socket is globalized by sails
   socket.get('/build',{}, function (response) {
-  
-    // response === {success: true, message: 'hi there!'}
-    console.log("socket response:", response);
+    $scope.$apply(function() {
+      // response === {success: true, message: 'hi there!'}
+      console.log("socket response:", response);
 
-    //create build models in an indexed array.
-    for(var i=0; i < response.length; i++) {
-      var buildInfo = response[i];
-      $scope.allBuilds[buildInfo.id] = buildInfo;
+      //create build models in an indexed array.
+      for(var i=0; i < response.length; i++) {
+        var buildInfo = response[i];
+        $scope.allBuilds[buildInfo.id] = buildInfo;
 
-      if(buildInfo.status !== "SUCCESS") {
-        $scope.failingBuilds[buildInfo.id] = buildInfo;
+        if(buildInfo.status !== "SUCCESS") {
+          $scope.failingBuilds[buildInfo.id] = buildInfo;
+        }
+
+        if(buildInfo.state === "running") {
+         $scope.runningBuilds[buildInfo.id] = buildInfo; 
+        }
       }
-
-      if(buildInfo.state === "running") {
-       $scope.runningBuilds[buildInfo.id] = buildInfo; 
-      }      
-    }
-    updateTestStatus($scope);
-    $scope.$digest();
+      updateTestStatus($scope); 
+    });   
   });
 
   socket.on("message", _.bind(function(data){
-    // Update our scope with our updated model.
-    console.log("where's here", data);
+    $scope.$apply(function() {
 
-    if(data.model === "build"){      
-      
-      var updatedBuildData = data.data;
-      console.log("build update received:", updatedBuildData);
+      // Update our scope with our updated model.
+      console.log("where's here", data);
 
-      $scope.allBuilds[updatedBuildData.id] = updatedBuildData;
+      if(data.model === "build"){      
+        
+        var updatedBuildData = data.data;
+        console.log("build update received:", updatedBuildData);
 
-      //update runningBuilds
-      if(updatedBuildData.state === "running") {
-        if(typeof $scope.runningBuilds[updatedBuildData.id] == "undefined") {
-          console.log("detected a new running build.");
-          $scope.runningBuilds[updatedBuildData.id] = updatedBuildData;
+        $scope.allBuilds[updatedBuildData.id] = updatedBuildData;
+
+        //update runningBuilds
+        if(updatedBuildData.state === "running") {
+          if(typeof $scope.runningBuilds[updatedBuildData.id] == "undefined") {
+            console.log("detected a new running build.");
+            $scope.runningBuilds[updatedBuildData.id] = updatedBuildData;
+          }
+          else {
+            console.log("updating running build stats");
+            $scope.runningBuilds[updatedBuildData.id].version = updatedBuildData.version;
+            $scope.runningBuilds[updatedBuildData.id].state = updatedBuildData.state;
+            $scope.runningBuilds[updatedBuildData.id].status = updatedBuildData.status;
+            $scope.runningBuilds[updatedBuildData.id].percentComplete = updatedBuildData.percentComplete; 
+          }
+
+          if($('#running-build-carousel .item.active').length < 1) {
+            $('#running-build-carousel .item:first').addClass('active');
+          }
+        } else {
+          delete $scope.runningBuilds[updatedBuildData.id];                    
         }
-        else {
-          console.log("updating running build stats");
-          $scope.runningBuilds[updatedBuildData.id].version = updatedBuildData.version;
-          $scope.runningBuilds[updatedBuildData.id].state = updatedBuildData.state;
-          $scope.runningBuilds[updatedBuildData.id].status = updatedBuildData.status;
-          $scope.runningBuilds[updatedBuildData.id].percentComplete = updatedBuildData.percentComplete; 
+
+        if(updatedBuildData.status !== "SUCCESS") {
+          $scope.failingBuilds[updatedBuildData.id] = updatedBuildData;
+        } else {
+          delete $scope.failingBuilds[updatedBuildData.id];
         }
-      } else {
-        delete $scope.runningBuilds[updatedBuildData.id];
-      }
-
-      if(updatedBuildData.status !== "SUCCESS") {
-        $scope.failingBuilds[updatedBuildData.id] = updatedBuildData;
-      } else {
-        delete $scope.failingBuilds[updatedBuildData.id];
-      }
-
-      updateTestStatus($scope);        
-      $scope.$digest();
+        
+        updateTestStatus($scope);              
       
-    } //end if 'build'
+      } //end if 'build'
+    });
   }, this)); //end of handling build updates.
 
 
@@ -168,14 +172,23 @@ window.MainCtrl = function($scope) {
     $scope.$apply(function(){
       updateInspirationalPoster($scope);
     });    
-  }, 30000)
+  }, 30000);
+
 };
 
 function updateInspirationalPoster($scope){
   console.log("updating inspirational image");
   socket.get('/images',{}, function (response) {
-    var randomIndex = Math.floor(Math.random() * response.successImages.length);
-    var newInspirationalImg = response.successImages[randomIndex];
-    $scope.inspirationalPic = newInspirationalImg;
+      $scope.$apply(function() {
+      var randomIndex = Math.floor(Math.random() * response.successImages.length);
+      var newInspirationalImg = response.successImages[randomIndex];
+      $scope.inspirationalPic = newInspirationalImg;
+    });
   });
 }
+
+//init carousels.
+$(document).ready(function(){  
+  $('#all-build-carousel').carousel({interval: 10000});   
+  $('#running-build-carousel').carousel({interval: 10000});
+});

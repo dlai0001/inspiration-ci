@@ -98,25 +98,24 @@ module.exports.bootstrap = function (cb) {
 
 	doneProcessingAllProjectsTask.then(function() {
 		console.log("starting polling interval task.");
-		var iteration = 0;
-		setInterval(function(){			
-			//tracked processed projects so we don't update too often.
-			var processedProjects = {};
+		
+		var lastBuildId = -1;
+		setInterval(function(){	
 
 			//Query for running builds
+			var runningBuildsQueryTask = new Deferred();
+
 			var queryRunningBuilds = teamCityConfig.apiUrl + "/builds?locator=running:true";
 			rest.get(queryRunningBuilds).on('complete', function(data){				
 				console.log("checking builds in progress:", data.builds.$.count);
 				if(parseInt(data.builds.$.count) <= 0) {
 					console.log("no build in progress");
+					runningBuildsQueryTask.resolve();
 					return;
 				}
-
-				console.log(data.builds.build);
+				
 				for(var i=0; i < data.builds.build.length; i++) {					
 					(function(currentBuild){					
-						
-						processedProjects[currentBuild.buildTypeId]	= true;
 
 						console.log("current build in progress", currentBuild);
 						Build.findOne({id:currentBuild.buildTypeId}).exec(function(err, foundModel){
@@ -132,48 +131,66 @@ module.exports.bootstrap = function (cb) {
 						});
 					})(data.builds.build[i].$);
 				}
-			});
+				runningBuildsQueryTask.resolve();
+			}); //end running builds query
 
 			//Query for last X completed builds"
-			var lastcompletedBuildsQuery = teamCityConfig.apiUrl + "/builds?count=10";
-			rest.get(lastcompletedBuildsQuery).on('complete', function(data){
-				
-				for(var i=0; i < data.builds.build.length; i++) {
-					(function(currentBuild){
+			runningBuildsQueryTask.then(function(){
 
-						//skip processing if we have already processed it.
-						if(processedProjects[currentBuild.buildTypeId] != true) {
-
-							Build.findOne({id:currentBuild.buildTypeId}).exec(function(err, foundModel){
-								processedProjects[foundModel.id] = true;
-								
-								if( foundModel.version == null ||
-									compareVersion(currentBuild.number, foundModel.version) >= 0) {									
-								
-									if( foundModel.status != currentBuild.status ||
-										foundModel.state != currentBuild.state ||
-										foundModel.version != currentBuild.number) {
-
-										console.log("updating build model for build", foundModel.name);
-										foundModel.status = currentBuild.status;
-										foundModel.state = currentBuild.state;								
-										foundModel.version = currentBuild.number;
-										foundModel.webUrl = currentBuild.webUrl;
-										foundModel.lastUpdated = new Date();							
-										foundModel.save(function(err, savedModel) {
-											console.log("saving model", savedModel);
-											Build.publishUpdate(savedModel.id, savedModel);
-										});
-									}
-
-								}
-							});
-						}
-					})(data.builds.build[i].$);
+				var lastcompletedBuildsQuery = teamCityConfig.apiUrl + "/builds?count=20";
+				if(lastBuildId > 0) {
+					lastcompletedBuildsQuery += teamCityConfig.apiUrl + "/builds?locator=sinceBuild(id:" + lastBuildId +")";
 				}
-			});
 
-		}, 2000); // On 10 second intervals.
+				console.log("checking last builds: ", lastcompletedBuildsQuery);
+				rest.get(lastcompletedBuildsQuery).on('complete', function(data){
+					
+					if(data.builds.$.count == 0) {
+						console.log("no new updates");
+						return;
+					}
+					//track processed projects so we don't overwrite a more recent result with an older one.
+					var processedProjects = {};
+
+					//track the last build for the next query.
+					lastBuildId = data.builds.build[0].$.id;
+
+					for(var i=0; i < data.builds.build.length; i++) {
+						(function(currentBuild){
+
+							//skip processing if we have already processed it.
+							if(processedProjects[currentBuild.buildTypeId] != true) {
+
+								Build.findOne({id:currentBuild.buildTypeId}).exec(function(err, foundModel){
+									processedProjects[foundModel.id] = true;
+									
+									if( foundModel.version == null ||
+										compareVersion(currentBuild.number, foundModel.version) >= 0) {									
+									
+										if( foundModel.status != currentBuild.status ||
+											foundModel.state != currentBuild.state ||
+											foundModel.version != currentBuild.number) {
+
+											console.log("updating build model for build", foundModel.name);
+											foundModel.status = currentBuild.status;
+											foundModel.state = currentBuild.state;								
+											foundModel.version = currentBuild.number;
+											foundModel.webUrl = currentBuild.webUrl;
+											foundModel.lastUpdated = new Date();							
+											foundModel.save(function(err, savedModel) {
+												console.log("saving model", savedModel);
+												Build.publishUpdate(savedModel.id, savedModel);
+											});
+										}
+
+									}
+								});
+							}
+						})(data.builds.build[i].$);
+					}
+				}); // end last builds query
+			});
+		}, 5000); // On 2 second intervals.
 	});
 	
 

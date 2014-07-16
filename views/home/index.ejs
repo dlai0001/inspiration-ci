@@ -11,21 +11,17 @@
             		<h1>Inspiration CI<h1>
             	</div>
                 <div class="text-center item build-status-box" ng-repeat="build in allBuilds">
-                	
-                    <h2>{{build.project}}</h2>
-                    <h1>{{build.name}}</h1>
-                    <h3><a href="{{build.webUrl}}" target="_new">
-                    	Build {{build.version}}
-                	</a></h3>
+                	<div data-model="{{build.id}}">
+	                    <h2>{{build.project}}</h2>
+	                    <h1>{{build.name}}</h1>
+	                    <h3><a href="{{build.webUrl}}" target="_new">
+	                    	Build {{build.version}}
+	                	</a></h3>
+                	</div>
                 </div>
                 
             </div><!-- /.carousel-inner -->
-        </div>
-        <script>
-  			$(document).ready(function(){  				
-    			$('#all-build-carousel').carousel({interval: 300});
-  			});
-		</script>
+        </div>        
 		<!-- /Carousel -->
     </div>
 
@@ -33,7 +29,7 @@
 	<div ng-show="!testsPassed">
     	<h1>Failing Builds</h1>
 		<div ng-repeat="build in failingBuilds" class="build-status-box">    			
-			<table class="center">
+			<table class="center" data-model="{{build.id}}">
         		<tr>
         			<td>
         				<img ng-show="builds.state=='running'" class="running-builds-img center" src="/images/loadingwheel.gif"></img>&nbsp;&nbsp;&nbsp;&nbsp;<br/>
@@ -57,11 +53,8 @@
     	<!--  Carousel -->  
         <div id="running-build-carousel" class="carousel slide"><!-- class of slide for animation -->
             <div class="carousel-inner">
-            	<div class="active text-center item build-status-box">
-            		<h1>Running Builds<h1>
-            	</div>
                 <div class="text-center item build-status-box" ng-repeat="build in runningBuilds">
-                	<table class="center">
+                	<table class="center" data-model="{{build.id}}">
                 		<tr>
                 			<td>
                 				<img class="running-builds-img center" src="/images/loadingwheel.gif"></img>&nbsp;&nbsp;&nbsp;&nbsp;<br/>
@@ -77,15 +70,27 @@
                 		</tr>
                 	</table>
                 </div>
-                
+                <!-- Repeat twice to avoid things swiming in an out form the same direction. -->
+                <div class="text-center item build-status-box" ng-repeat="build in runningBuilds">
+                	<table class="center" data-model="{{build.id}}">
+                		<tr>
+                			<td>
+                				<img class="running-builds-img center" src="/images/loadingwheel.gif"></img>&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+                				<span class="center">{{build.percentComplete}}%</span>
+                			</td>
+                			<td>
+                				<h2>{{build.project}}</h2>
+			                    <h1>{{build.name}}</h1>
+			                    <h3><a href="{{build.webUrl}}" target="_new">
+			                    	Build {{build.version}}
+			                	</a></h3>
+                			</td>                			
+                		</tr>
+                	</table>
+                </div>
             </div><!-- /.carousel-inner -->
-        </div>
-        <script>
-  			$(document).ready(function(){  				
-    			$('#running-build-carousel').carousel({interval: 300});
-  			});
-		</script>
-		<!-- /Carousel -->    	
+        </div>        
+		<!-- /Carousel -->   
     </div>
 
  
