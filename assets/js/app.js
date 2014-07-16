@@ -82,8 +82,7 @@ function updateTestStatus($scope) {
       $scope.testsPassed = true;
     } else {
       $scope.testsPassed = false;
-    }
-    $scope.$digest();
+    }    
   });
   
 }
@@ -120,7 +119,7 @@ window.MainCtrl = function($scope) {
       }      
     }
     updateTestStatus($scope);
-    
+    $scope.$digest();
   });
 
   socket.on("message", _.bind(function(data){
