@@ -23,39 +23,6 @@
     }
   }
 
-  socket.on('connect', function socketConnected() {
-
-    // Listen for Comet messages from Sails
-    socket.on('message', function messageReceived(message) {
-
-      ///////////////////////////////////////////////////////////
-      // Replace the following with your own custom logic
-      // to run when a new message arrives from the Sails.js
-      // server.
-      ///////////////////////////////////////////////////////////
-      log('New comet message received :: ', message);
-      //////////////////////////////////////////////////////
-
-    });
-
-
-
-    ///////////////////////////////////////////////////////////
-    // Here's where you'll want to add any custom logic for
-    // when the browser establishes its socket connection to 
-    // the Sails.js server.
-    ///////////////////////////////////////////////////////////
-    log(
-        'Socket is now connected and globally accessible as `socket`.\n' + 
-        'e.g. to send a GET request to Sails, try \n' + 
-        '`socket.get("/", function (response) ' +
-        '{ console.log(response); })`'
-    );
-    ///////////////////////////////////////////////////////////
-
-  });
-
-
   // Expose connected `socket` instance globally so that it's easy
   // to experiment with from the browser console while prototyping.
   window.socket = socket;
@@ -68,22 +35,6 @@
 
 );
 
-function updateTestStatus($scope) {
-  console.log("updating test state and status");
-  
-  if(Object.keys($scope.runningBuilds).length == 0) {
-    $scope.testsRunning = false;
-  } else {
-    $scope.testsRunning = true;
-  }
-
-  if(Object.keys($scope.failingBuilds).length == 0) {
-    $scope.testsPassed = true;
-  } else {
-    $scope.testsPassed = false;
-  }
-  
-}
 
 // Add our main window after socket io has been initialized.
 window.MainCtrl = function($scope) {
@@ -131,37 +82,46 @@ window.MainCtrl = function($scope) {
         var updatedBuildData = data.data;
         console.log("build update received:", updatedBuildData);
 
-        $scope.allBuilds[updatedBuildData.id] = updatedBuildData;
+        updateClientSideModel($scope.allBuilds[updatedBuildData.id], updatedBuildData);
 
         //update runningBuilds
         if(updatedBuildData.state === "running") {
-          if(typeof $scope.runningBuilds[updatedBuildData.id] == "undefined") {
+          console.log("checking if we have a running instance already:", $scope.runningBuilds[updatedBuildData.id]);
+          if(typeof $scope.runningBuilds[updatedBuildData.id] == "undefined") {            
             console.log("detected a new running build.");
             $scope.runningBuilds[updatedBuildData.id] = updatedBuildData;
-            $scope.$digest();
           }
           else {
             console.log("updating running build stats");
-            $scope.runningBuilds[updatedBuildData.id].version = updatedBuildData.version;
-            $scope.runningBuilds[updatedBuildData.id].state = updatedBuildData.state;
-            $scope.runningBuilds[updatedBuildData.id].status = updatedBuildData.status;
-            $scope.runningBuilds[updatedBuildData.id].percentComplete = updatedBuildData.percentComplete; 
+            updateClientSideModel($scope.runningBuilds[updatedBuildData.id], updatedBuildData);
           }
-
-          if($('#running-build-carousel .item.active').length < 1) {
-            $('#running-build-carousel .item:first').addClass('active');
-          }
+          
         } else {
+          // build is no longer running.  removing it.
           delete $scope.runningBuilds[updatedBuildData.id];
-          $scope.$digest();
         }
 
+        // Make sure we always have at least 1 active running build.
+        setTimeout(function(){
+          if($('#running-build-carousel .item.active').length < 1) {
+            try {
+              $('#running-build-carousel .item:first').addClass('active');
+            } catch(e) {
+              //do nothing.
+            }
+          }
+        }, 1000);
+        
+
         if(updatedBuildData.status !== "SUCCESS") {
-          $scope.failingBuilds[updatedBuildData.id] = updatedBuildData;
-          $scope.$digest();
+          if(typeof $scope.failingBuilds[updatedBuildData.id] == "undefined") {
+            console.log("detected new failing build");
+            $scope.failingBuilds[updatedBuildData.id] = updatedBuildData;
+          } else {
+            updateClientSideModel($scope.failingBuilds[updatedBuildData.id], updatedBuildData);
+          }
         } else {
-          delete $scope.failingBuilds[updatedBuildData.id];
-          $scope.$digest();
+          delete $scope.failingBuilds[updatedBuildData.id];          
         }
         
         updateTestStatus($scope);              
@@ -180,6 +140,25 @@ window.MainCtrl = function($scope) {
 
 };
 
+
+function updateTestStatus($scope) {
+  console.log("updating test state and status");
+  
+  if(Object.keys($scope.runningBuilds).length == 0) {
+    $scope.testsRunning = false;
+  } else {
+    $scope.testsRunning = true;
+  }
+
+  if(Object.keys($scope.failingBuilds).length == 0) {
+    $scope.testsPassed = true;
+  } else {
+    $scope.testsPassed = false;
+  }
+  
+}
+
+
 function updateInspirationalPoster($scope){
   console.log("updating inspirational image");
   socket.get('/images',{}, function (response) {
@@ -191,8 +170,14 @@ function updateInspirationalPoster($scope){
   });
 }
 
+function updateClientSideModel(clientModel, update) {
+  for(var key in update) {
+    clientModel[key] = update[key];
+  }
+}
+
 //init carousels.
-$(document).ready(function(){  
+setTimeout(function(){
   $('#all-build-carousel').carousel({interval: 10000});   
   $('#running-build-carousel').carousel({interval: 10000});
-});
+}, 5000);

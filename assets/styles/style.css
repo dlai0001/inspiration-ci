@@ -25,10 +25,10 @@ html,body {
 }
 
 .carousel-inner > .item {
-    -webkit-transition: 10s linear left;
-    -moz-transition: 10s linear left;
-    -o-transition: 10s linear left;
-    transition: 10s linear left;
+    -webkit-transition: 9s linear left;
+    -moz-transition: 9s linear left;
+    -o-transition: 9s linear left;
+    transition: 9s linear left;
 }
 
 .build-status-box {		
