@@ -138,6 +138,7 @@ window.MainCtrl = function($scope) {
           if(typeof $scope.runningBuilds[updatedBuildData.id] == "undefined") {
             console.log("detected a new running build.");
             $scope.runningBuilds[updatedBuildData.id] = updatedBuildData;
+            $scope.$digest();
           }
           else {
             console.log("updating running build stats");
@@ -151,13 +152,16 @@ window.MainCtrl = function($scope) {
             $('#running-build-carousel .item:first').addClass('active');
           }
         } else {
-          delete $scope.runningBuilds[updatedBuildData.id];                    
+          delete $scope.runningBuilds[updatedBuildData.id];
+          $scope.$digest();
         }
 
         if(updatedBuildData.status !== "SUCCESS") {
           $scope.failingBuilds[updatedBuildData.id] = updatedBuildData;
+          $scope.$digest();
         } else {
           delete $scope.failingBuilds[updatedBuildData.id];
+          $scope.$digest();
         }
         
         updateTestStatus($scope);              
