@@ -34,6 +34,7 @@ html,body {
 .build-status-box {		
 	border-bottom: 0.2em solid;
 	border-top: 0.2em solid;
+	height: 14em;
 }
 
 .running-builds-img {
