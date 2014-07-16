@@ -32,15 +32,23 @@
     <!-- Failing Tests Display -->
 	<div ng-show="!testsPassed">
     	<h1>Failing Builds</h1>
-    	<ul>
-    		<li ng-repeat="build in failingBuilds" class="build-status-box">    			
-    			<h2>{{build.project}}</h2>
-				<h1>{{build.name}}</h1>
-				<h3><a href="{{build.webUrl}}" target="_new">
-					Build {{build.version}}
-				</a></h3>    			
-    		</li>
-    	</ul>
+		<div ng-repeat="build in failingBuilds" class="build-status-box">    			
+			<table class="center">
+        		<tr>
+        			<td>
+        				<img ng-show="builds.state=='running'" class="running-builds-img center" src="/images/loadingwheel.gif"></img>&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+        				<span class="center" ng-show="builds.state=='running'">{{build.percentComplete}}%</span>
+        			</td>
+        			<td>
+        				<h2>{{build.project}}</h2>
+	                    <h1>{{build.name}}</h1>
+	                    <h3><a href="{{build.webUrl}}" target="_new">
+	                    	Build {{build.version}}
+	                	</a></h3>
+        			</td>
+        		</tr>
+        	</table>  			
+		</div>
     </div>   
 
 	<!-- Running Tests     -->
@@ -67,7 +75,7 @@
 			                	</a></h3>
                 			</td>                			
                 		</tr>
-                	</table>                    
+                	</table>
                 </div>
                 
             </div><!-- /.carousel-inner -->
