@@ -139,12 +139,12 @@ module.exports.bootstrap = function (cb) {
 
 				var lastcompletedBuildsQuery = teamCityConfig.apiUrl + "/builds?count=20";
 				if(lastBuildId > 0) {
-					lastcompletedBuildsQuery += teamCityConfig.apiUrl + "/builds?locator=sinceBuild(id:" + lastBuildId +")";
+					lastcompletedBuildsQuery = teamCityConfig.apiUrl + "/builds?locator=sinceBuild(id:" + lastBuildId +")";
 				}
 
 				console.log("checking last builds: ", lastcompletedBuildsQuery);
 				rest.get(lastcompletedBuildsQuery).on('complete', function(data){
-					
+					console.log("got update:", data);
 					if(data.builds.$.count == 0) {
 						console.log("no new updates");
 						return;
