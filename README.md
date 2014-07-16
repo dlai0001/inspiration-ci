@@ -29,4 +29,4 @@ Open your browser to http://localhost:1337 and maximize the browser to full scre
 
 About:
 
-This was just a fun project to get to know angular and working with pub/sub in angular apps.  I don't intent on maintaining this, but pull requests and suggestions are welcome.
+This was just a fun project to get to know angular and working with pub/sub in angular apps.  I don't intend on maintaining this as a supported project, but pull requests and suggestions are welcome.
