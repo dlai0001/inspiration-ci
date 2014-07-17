@@ -96,9 +96,23 @@ window.MainCtrl = function($scope) {
             updateClientSideModel($scope.runningBuilds[updatedBuildData.id], updatedBuildData);
           }
           
+
         } else {
-          // build is no longer running.  removing it.
+          // build is no longer running.  removing it from running builds.
+          console.log("build no longer running:", updatedBuildData);
           delete $scope.runningBuilds[updatedBuildData.id];
+
+          // handling processing pass/fail state.
+          if(updatedBuildData.status == "FAILURE") {
+            if(typeof $scope.failingBuilds[updatedBuildData.id] == "undefined") {
+              console.log("detected new failing build");
+              $scope.failingBuilds[updatedBuildData.id] = updatedBuildData;
+            } else {
+              updateClientSideModel($scope.failingBuilds[updatedBuildData.id], updatedBuildData);
+            }
+          } else {
+            delete $scope.failingBuilds[updatedBuildData.id];          
+          }
         }
 
         // Make sure we always have at least 1 active running build.
@@ -110,19 +124,7 @@ window.MainCtrl = function($scope) {
               //do nothing.
             }
           }
-        }, 1000);
-        
-
-        if(updatedBuildData.status == "FAILURE") {
-          if(typeof $scope.failingBuilds[updatedBuildData.id] == "undefined") {
-            console.log("detected new failing build");
-            $scope.failingBuilds[updatedBuildData.id] = updatedBuildData;
-          } else {
-            updateClientSideModel($scope.failingBuilds[updatedBuildData.id], updatedBuildData);
-          }
-        } else {
-          delete $scope.failingBuilds[updatedBuildData.id];          
-        }
+        }, 1000);        
         
         updateTestStatus($scope);              
       

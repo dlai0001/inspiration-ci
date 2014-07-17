@@ -32,11 +32,11 @@
 			<table class="center" data-model="{{build.id}}">
         		<tr>
         			<td class="col-lg-1">
-        				<img ng-show="builds.state == 'running'" 
+        				<img ng-show="build.state == 'running'" 
         					class="running-builds-img center" 
         					src="/images/loadingwheel.gif"></img>
         					&nbsp;&nbsp;&nbsp;&nbsp;<br/>
-        				<span class="center" ng-show="builds.state == 'running'">
+        				<span class="center" ng-show="build.state == 'running'">
         					{{build.percentComplete}}%
         				</span>
         			</td>
