@@ -80,42 +80,45 @@ window.MainCtrl = function($scope) {
       if(data.model === "build"){      
         
         var updatedBuildData = data.data;
-        console.log("build update received:", updatedBuildData);
+        console.log("build update received:", updatedBuildData);        
 
-        updateClientSideModel($scope.allBuilds[updatedBuildData.id], updatedBuildData);
+        //update models in all arrays which the build already exists.
+        [$scope.allBuilds, $scope.runningBuilds, $scope.failingBuilds].forEach(function(buildArray){
+          if(buildArray[updatedBuildData.id]) {
+            updateClientSideModel(buildArray[updatedBuildData.id], updatedBuildData);
+          }
+        });
 
-        //update runningBuilds
-        if(updatedBuildData.state === "running") {
-          console.log("checking if we have a running instance already:", $scope.runningBuilds[updatedBuildData.id]);
+        // handle running build.
+        if(updatedBuildData.state === "running") {          
           if(typeof $scope.runningBuilds[updatedBuildData.id] == "undefined") {            
             console.log("detected a new running build.");
             $scope.runningBuilds[updatedBuildData.id] = updatedBuildData;
           }
-          else {
-            console.log("updating running build stats");
-            updateClientSideModel($scope.runningBuilds[updatedBuildData.id], updatedBuildData);
-          }
-          
+        } else { //build is not running.
 
-        } else {
           // build is no longer running.  removing it from running builds.
-          console.log("build no longer running:", updatedBuildData);
-          delete $scope.runningBuilds[updatedBuildData.id];
+          if($scope.runningBuilds[updatedBuildData.id]) {
+            console.log("removing build from running list:", updatedBuildData);
+            delete $scope.runningBuilds[updatedBuildData.id];
+          }
 
           // handling processing pass/fail state.
           if(updatedBuildData.status == "FAILURE") {
             if(typeof $scope.failingBuilds[updatedBuildData.id] == "undefined") {
               console.log("detected new failing build");
               $scope.failingBuilds[updatedBuildData.id] = updatedBuildData;
-            } else {
-              updateClientSideModel($scope.failingBuilds[updatedBuildData.id], updatedBuildData);
-            }
+            } 
           } else {
-            delete $scope.failingBuilds[updatedBuildData.id];          
+            if($scope.failingBuilds[updatedBuildData.id]) {
+              console.log("removing no longer failing build from failures list", updatedBuildData);
+              delete $scope.failingBuilds[updatedBuildData.id];
+            }            
           }
         }
 
         // Make sure we always have at least 1 active running build.
+        // so not to break the bootstrap carousel.
         setTimeout(function(){
           if($('#running-build-carousel .item.active').length < 1) {
             try {
@@ -179,7 +182,8 @@ function updateClientSideModel(clientModel, update) {
   }
 }
 
-//init carousels.
+//init carousels. - setting init in the future to give models to load 
+// before starting the carousels.
 setTimeout(function(){
   $('#all-build-carousel').carousel({interval: 10000});   
   $('#running-build-carousel').carousel({interval: 10000});

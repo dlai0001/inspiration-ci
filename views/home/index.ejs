@@ -31,12 +31,12 @@
 		<div ng-repeat="build in failingBuilds" class="build-status-box">    			
 			<table class="center" data-model="{{build.id}}">
         		<tr>
-        			<td class="col-lg-1">
-        				<img ng-show="build.state == 'running'" 
+        			<td>
+        				<img ng-if="build.state == 'running'" 
         					class="running-builds-img center" 
         					src="/images/loadingwheel.gif"></img>
         					&nbsp;&nbsp;&nbsp;&nbsp;<br/>
-        				<span class="center" ng-show="build.state == 'running'">
+        				<span class="center" ng-if="build.state == 'running'">
         					{{build.percentComplete}}%
         				</span>
         			</td>
