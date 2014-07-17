@@ -9,9 +9,14 @@
  */
 
 var teamCityConfig = require('./teamcity').teamcity;
+
 var Deferred = require("promised-io/promise").Deferred;
+var resolveAll = require("promised-io/promise").all;
+
 var rest = require('restler'); //lib to do rest requests.
+
 var moment = require('moment');
+
 var compareVersion = require('../helpers/utilities').compareVersion;
 
 
@@ -58,15 +63,8 @@ module.exports.bootstrap = function (cb) {
 		Build.find().exec(function(err, buildModels){
 
 			for(var i=0; i < buildModels.length; i++) {
-				(function(currentBuildModel){					
-					var getBuildStatusUrl =  teamCityConfig.apiUrl 
-						+ "/buildTypes/" + currentBuildModel.id 
-						+ "/builds?count=1";
-
-					rest.get(getBuildStatusUrl).on('complete', function(data){
-						var lastBuildOfProject = data.builds.build[0].$;
-						updateModel(currentBuildModel, lastBuildOfProject);
-					});
+				(function(currentBuildModel){
+					updateBuildStatusForBuild(currentBuildModel);					
 				})(buildModels[i]);
 			}
 			
@@ -118,18 +116,30 @@ function pollRunningProjects(callback) {
 			callback();
 			return;
 		}
+
+		var promiseArray = [];
 		
 		for(var i=0; i < data.builds.build.length; i++) {					
-			(function(currentBuild){					
+			(function(currentBuild){
+				var updatePromise = new Deferred();
+				promiseArray.push(updatePromise);
 
 				console.log("current build in progress", currentBuild);
 				Build.findOne({id:currentBuild.buildTypeId}).exec(function(err, foundModel){
-					updateModel(foundModel, currentBuild);
+					updateModel(foundModel, currentBuild, function(){
+						updatePromise.resolve();
+					});
 				});
 
 			})(data.builds.build[i].$);
 		}
-		callback();
+
+		//Wait for all updates to complete before continuing.
+		resolveAll(promiseArray).then(function(){
+			console.log("Update running projects complete.");
+			callback();
+		});		
+
 	}); //end running builds query	
 }
 
@@ -144,9 +154,12 @@ function pollRecentlyCompletedAndReturnLastBuildId(lastBuildId, callback) {
 	rest.get(lastcompletedBuildsQuery).on('complete', function(data){
 		
 		if(data.builds.$.count == 0) {
-			console.log("no new updates");
+			console.log("no new updates in recently complated projects");
 			return lastBuildId;
 		}
+
+		console.log("Found recently complated projects.");
+
 		//track processed projects so we don't overwrite a more recent result with an older one.
 		var processedProjects = {};
 
@@ -163,7 +176,7 @@ function pollRecentlyCompletedAndReturnLastBuildId(lastBuildId, callback) {
 					
 					// if we have newer info than the one we fetched.
 					// (this can happen during initializating.)
-					if( foundModel != null && !compareVersion(currentBuild.number, foundModel.version))
+					if( foundModel.version != null && compareVersion(currentBuild.number, foundModel.version) < 0)						
 						return;
 
 					updateModel(foundModel, currentBuild);
@@ -178,7 +191,7 @@ function pollRecentlyCompletedAndReturnLastBuildId(lastBuildId, callback) {
 	}); // end last builds query
 }
 
-function updateModel(buildModel, updatedData) {
+function updateModel(buildModel, updatedData, callback) {
 	console.log("updating build model for build", buildModel.name);
 	buildModel.status = updatedData.status;
 	buildModel.state = updatedData.state;								
@@ -190,6 +203,10 @@ function updateModel(buildModel, updatedData) {
 		console.log("model saved, publishing", savedModel);
 		Build.publishUpdate(savedModel.id, savedModel);
 	});
+
+	if(callback) {
+		callback();
+	}
 }
 
 function buildModelCleanup(callback) {
@@ -202,3 +219,18 @@ function buildModelCleanup(callback) {
 		callback();
 	});
 }
+
+function updateBuildStatusForBuild(currentBuildModel, callback) {
+	var getBuildStatusUrl =  teamCityConfig.apiUrl 
+		+ "/buildTypes/" + currentBuildModel.id
+		+ "/builds?count=1";
+
+	rest.get(getBuildStatusUrl).on('complete', function(data){
+		var lastBuildOfProject = data.builds.build[0].$;
+		updateModel(currentBuildModel, lastBuildOfProject);
+	});
+
+	if(callback)
+		callback();
+}
+

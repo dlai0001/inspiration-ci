@@ -128,6 +128,7 @@ window.MainCtrl = function($scope) {
       
       } //end if 'build'
     });
+    $scope.$digest();
   }, this)); //end of handling build updates.
 
 
