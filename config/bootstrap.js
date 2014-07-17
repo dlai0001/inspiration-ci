@@ -151,7 +151,7 @@ function pollRecentlyCompleted(lastBuildId) {
 
 	var lastcompletedBuildsQuery = teamCityConfig.apiUrl + "/builds?count=20";
 	if(lastBuildId > 0) {
-		lastcompletedBuildsQuery = teamCityConfig.apiUrl + "/builds?locator=sinceBuild(id:" + lastBuildId +")";
+		lastcompletedBuildsQuery = teamCityConfig.apiUrl + "/builds?locator=canceled:any,sinceBuild(id:" + lastBuildId +")";
 	}
 
 	console.log("checking last builds: ", lastcompletedBuildsQuery);

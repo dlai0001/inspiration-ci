@@ -59,7 +59,7 @@ window.MainCtrl = function($scope) {
         var buildInfo = response[i];
         $scope.allBuilds[buildInfo.id] = buildInfo;
 
-        if(buildInfo.status !== "SUCCESS") {
+        if(buildInfo.status == "FAILURE") {
           $scope.failingBuilds[buildInfo.id] = buildInfo;
         }
 
@@ -113,7 +113,7 @@ window.MainCtrl = function($scope) {
         }, 1000);
         
 
-        if(updatedBuildData.status !== "SUCCESS") {
+        if(updatedBuildData.status == "FAILURE") {
           if(typeof $scope.failingBuilds[updatedBuildData.id] == "undefined") {
             console.log("detected new failing build");
             $scope.failingBuilds[updatedBuildData.id] = updatedBuildData;

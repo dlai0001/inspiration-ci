@@ -15,7 +15,7 @@
 	                    <h2>{{build.project}}</h2>
 	                    <h1>{{build.name}}</h1>
 	                    <h3><a href="{{build.webUrl}}" target="_new">
-	                    	Build {{build.version}}
+	                    	Build {{build.version}} [{{build.status}}]
 	                	</a></h3>
                 	</div>
                 </div>
@@ -44,7 +44,7 @@
         				<h2>{{build.project}}</h2>
 	                    <h1>{{build.name}}</h1>
 	                    <h3><a href="{{build.webUrl}}" target="_new">
-	                    	Build {{build.version}}
+	                    	Build {{build.version}} [{{build.status}}]
 	                	</a></h3>
         			</td>
         		</tr>
@@ -63,36 +63,24 @@
                 		<tr>
                 			<td>
                 				<img class="running-builds-img center" src="/images/loadingwheel.gif"></img>&nbsp;&nbsp;&nbsp;&nbsp;<br/>
-                				<span class="center">{{build.percentComplete}}%</span>
+                				<span class="center" ng-if="build.percentComplete < 100">
+                					{{build.percentComplete}}%
+                				</span>
+                				<span class="center" ng-if="build.percentComplete >= 100">
+                					build overtime
+                				</span>
                 			</td>
                 			<td>
                 				<h2>{{build.project}}</h2>
 			                    <h1>{{build.name}}</h1>
 			                    <h3><a href="{{build.webUrl}}" target="_new">
-			                    	Build {{build.version}}
+			                    	Build {{build.version}} [{{build.status}}]
 			                	</a></h3>
                 			</td>                			
                 		</tr>
                 	</table>
                 </div>
-                <!-- Repeat twice to avoid things swiming in an out form the same direction. -->
-                <div class="text-center item build-status-box" ng-repeat="build in runningBuilds">
-                	<table class="center" data-model="{{build.id}}">
-                		<tr>
-                			<td>
-                				<img class="running-builds-img center" src="/images/loadingwheel.gif"></img>&nbsp;&nbsp;&nbsp;&nbsp;<br/>
-                				<span class="center">{{build.percentComplete}}%</span>
-                			</td>
-                			<td>
-                				<h2>{{build.project}}</h2>
-			                    <h1>{{build.name}}</h1>
-			                    <h3><a href="{{build.webUrl}}" target="_new">
-			                    	Build {{build.version}}
-			                	</a></h3>
-                			</td>                			
-                		</tr>
-                	</table>
-                </div>
+                
             </div><!-- /.carousel-inner -->
         </div>        
 		<!-- /Carousel -->   
