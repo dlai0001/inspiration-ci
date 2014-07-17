@@ -44,7 +44,9 @@
         				<h2>{{build.project}}</h2>
 	                    <h1>{{build.name}}</h1>
 	                    <h3><a href="{{build.webUrl}}" target="_new">
-	                    	Build {{build.version}} [{{build.status}}]
+	                    	Build {{build.version}} 
+	                    	<span ng-if="build.state != 'running'">[{{build.status}}]</span>
+	                    	<span ng-if="build.state == 'running'">Running...</span>
 	                	</a></h3>
         			</td>
         		</tr>
@@ -74,7 +76,7 @@
                 				<h2>{{build.project}}</h2>
 			                    <h1>{{build.name}}</h1>
 			                    <h3><a href="{{build.webUrl}}" target="_new">
-			                    	Build {{build.version}} [{{build.status}}]
+			                    	Build {{build.version}} Running
 			                	</a></h3>
                 			</td>                			
                 		</tr>

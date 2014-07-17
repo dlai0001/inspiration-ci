@@ -13,6 +13,8 @@ var teamCityConfig = require('./teamcity').teamcity;
 var Deferred = require("promised-io/promise").Deferred;
 var resolveAll = require("promised-io/promise").all;
 
+var debounce = require('debounce');
+
 var rest = require('restler'); //lib to do rest requests.
 
 var moment = require('moment');
@@ -101,6 +103,8 @@ function setupProjectUpdatePolling() {
 	}, 5000); // On 5 second intervals.
 }
 
+var debouncedCleanUpOldRunningBuilds = debounce(cleanUpOldRunningBuilds, 20000);
+
 function pollRunningProjects() {
 	var promise = new Deferred();
 	var queryRunningBuilds = teamCityConfig.apiUrl + "/builds?locator=running:true";
@@ -111,9 +115,13 @@ function pollRunningProjects() {
 		// results in expected format.
 		try {
 			if(parseInt(data.builds.$.count) <= 0) {
-				console.log("no build in progress");
+				console.log("no build in progress");								
 				promise.resolve();
 				return;
+			} else {
+				// Let's debounce a running builds cleanup so we run it after all 
+				// running builds disappears.
+				debouncedCleanUpOldRunningBuilds();
 			}
 		} catch(e) {
 			console.log("error checking builds in progress:", e);
@@ -184,8 +192,7 @@ function pollRecentlyCompleted(lastBuildId) {
 					if( foundModel.version != null && compareVersion(currentBuild.number, foundModel.version) < 0)						
 						return;
 
-					updateModel(foundModel, currentBuild);
-					
+					updateModel(foundModel, currentBuild);					
 				});
 				
 			})(data.builds.build[i].$);
@@ -241,3 +248,14 @@ function updateBuildStatusForBuild(currentBuildModel, callback) {
 		callback();
 }
 
+function cleanUpOldRunningBuilds() {
+	console.log("Cleaning up running builds");
+	Build.find({state:'running'}).exec(function(err, buildModels){
+		for(var i=0; i < buildModels.length; i++) {
+			(function(currentBuildModel){
+				console.log("running builds cleanup updated", currentBuildModel);
+				updateBuildStatusForBuild(currentBuildModel);					
+			})(buildModels[i]);
+		}		
+	});
+}
