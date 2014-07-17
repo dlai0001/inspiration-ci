@@ -48,10 +48,9 @@ window.MainCtrl = function($scope) {
   $scope.allBuilds = {};
   
 
-  // socket is globalized by sails
-  socket.get('/build',{}, function (response) {
+  console.log("getting initial project statuses");
+  socket.get('/build',{}, function (response) {    
     $scope.$apply(function() {
-      // response === {success: true, message: 'hi there!'}
       console.log("socket response:", response);
 
       //create build models in an indexed array.
