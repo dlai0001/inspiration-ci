@@ -88,33 +88,35 @@ module.exports.bootstrap = function (cb) {
 
 
 function setupProjectUpdatePolling() {
-	var lastBuildId = -1;
+	var lastBuildId = -1; //Track the last build we queried.
 	setInterval(function(){	
 
-		//Query for running builds
-		var runningBuildsQueryTask = new Deferred();
-		pollRunningProjects(function(){
-			runningBuildsQueryTask.resolve();
-		});
-
-
-		//Query for last X completed builds"
-		runningBuildsQueryTask.then(function(){
-			pollRecentlyCompletedAndReturnLastBuildId(lastBuildId, function(buildId) {
+		//Query for running builds		
+		pollRunningProjects().then(function(){
+			pollRecentlyCompleted(lastBuildId).then(function(buildId) {
 				lastBuildId = buildId;
 			});
 		});
+
 	}, 5000); // On 5 second intervals.
 }
 
-function pollRunningProjects(callback) {
+function pollRunningProjects() {
+	var promise = new Deferred();
 	var queryRunningBuilds = teamCityConfig.apiUrl + "/builds?locator=running:true";
 	rest.get(queryRunningBuilds).on('complete', function(data){				
-		console.log("checking builds in progress:", data.builds.$.count);
-		if(parseInt(data.builds.$.count) <= 0) {
-			console.log("no build in progress");
-			callback();
-			return;
+		console.log("checking builds in progress:", data);
+
+		// It was observed that sometimes returned data does not contain
+		// results in expected format.
+		try {
+			if(parseInt(data.builds.$.count) <= 0) {
+				console.log("no build in progress");
+				promise.resolve();
+				return;
+			}
+		} catch(e) {
+			console.log("error checking builds in progress:", e);
 		}
 
 		var promiseArray = [];
@@ -137,14 +139,16 @@ function pollRunningProjects(callback) {
 		//Wait for all updates to complete before continuing.
 		resolveAll(promiseArray).then(function(){
 			console.log("Update running projects complete.");
-			callback();
-		});		
-
+			promise.resolve();
+		});				
 	}); //end running builds query	
+	return promise;
 }
 
 
-function pollRecentlyCompletedAndReturnLastBuildId(lastBuildId, callback) {
+function pollRecentlyCompleted(lastBuildId) {
+	var promise = new Deferred();
+
 	var lastcompletedBuildsQuery = teamCityConfig.apiUrl + "/builds?count=20";
 	if(lastBuildId > 0) {
 		lastcompletedBuildsQuery = teamCityConfig.apiUrl + "/builds?locator=sinceBuild(id:" + lastBuildId +")";
@@ -155,7 +159,8 @@ function pollRecentlyCompletedAndReturnLastBuildId(lastBuildId, callback) {
 		
 		if(data.builds.$.count == 0) {
 			console.log("no new updates in recently complated projects");
-			return lastBuildId;
+			promise.resolve(lastBuildId);
+			return;
 		}
 
 		console.log("Found recently complated projects.");
@@ -187,8 +192,10 @@ function pollRecentlyCompletedAndReturnLastBuildId(lastBuildId, callback) {
 		}
 
 		//Call back using last build id to alert the caller for tracking last build.
-		callback(data.builds.build[0].$.id);
+		promise.resolve(data.builds.build[0].$.id);
 	}); // end last builds query
+	
+	return promise;
 }
 
 function updateModel(buildModel, updatedData, callback) {
