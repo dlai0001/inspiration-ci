@@ -166,12 +166,6 @@ function pollRecentlyCompletedAndReturnLastBuildId(lastBuildId, callback) {
 					if( foundModel != null && !compareVersion(currentBuild.number, foundModel.version))
 						return;
 
-					// If model is mostly unchanged, don't bother updating.
-					if( foundModel.status == currentBuild.status &&
-							foundModel.state == currentBuild.state &&
-							foundModel.version == currentBuild.number)
-						return;
-
 					updateModel(foundModel, currentBuild);
 					
 				});
