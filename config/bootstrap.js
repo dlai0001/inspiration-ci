@@ -103,7 +103,6 @@ function setupProjectUpdatePolling() {
 	}, 5000); // On 5 second intervals.
 }
 
-var debouncedCleanUpOldRunningBuilds = debounce(cleanUpOldRunningBuilds, 20000);
 
 function pollRunningProjects() {
 	var promise = new Deferred();
@@ -121,10 +120,13 @@ function pollRunningProjects() {
 			} else {
 				// Let's debounce a running builds cleanup so we run it after all 
 				// running builds disappears.
-				debouncedCleanUpOldRunningBuilds();
+				scheduleCleanUpOldRunningBuilds();
 			}
 		} catch(e) {
+			//Occasionally TeamCity performs a cleanup task which causes the call above
+			// not to respond.
 			console.log("error checking builds in progress:", e);
+			return; 
 		}
 
 		var promiseArray = [];
@@ -248,7 +250,8 @@ function updateBuildStatusForBuild(currentBuildModel, callback) {
 		callback();
 }
 
-function cleanUpOldRunningBuilds() {
+var scheduleCleanUpOldRunningBuilds = debounce(function cleanUpOldRunningBuilds() {
+
 	console.log("Cleaning up running builds");
 	Build.find({state:'running'}).exec(function(err, buildModels){
 		for(var i=0; i < buildModels.length; i++) {
@@ -258,4 +261,4 @@ function cleanUpOldRunningBuilds() {
 			})(buildModels[i]);
 		}		
 	});
-}
+},20000);
