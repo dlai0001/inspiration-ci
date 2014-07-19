@@ -8,20 +8,17 @@
  */
 
 
+function log () {
+  if (typeof console !== 'undefined') {
+    console.log.apply(console, arguments);
+  }
+}
+
 (function (io) {
 
   // as soon as this file is loaded, connect automatically, 
   var socket = io.connect();
-  if (typeof console !== 'undefined') {
-    log('Connecting to Sails.js...');
-  }
 
-  // Simple log function to keep the example simple
-  function log () {
-    if (typeof console !== 'undefined') {
-      console.log.apply(console, arguments);
-    }
-  }
 
   // Expose connected `socket` instance globally so that it's easy
   // to experiment with from the browser console while prototyping.
@@ -48,10 +45,10 @@ window.MainCtrl = function($scope) {
   $scope.allBuilds = {};
   
 
-  console.log("getting initial project statuses");
+  log("getting initial project statuses");
   socket.get('/build',{}, function (response) {    
     $scope.$apply(function() {
-      console.log("socket response:", response);
+      log("socket response:", response);
 
       //create build models in an indexed array.
       for(var i=0; i < response.length; i++) {
@@ -74,12 +71,12 @@ window.MainCtrl = function($scope) {
     $scope.$apply(function() {
 
       // Update our scope with our updated model.
-      console.log("where's here", data);
+      log("where's here", data);
 
       if(data.model === "build"){      
         
         var updatedBuildData = data.data;
-        console.log("build update received:", updatedBuildData);        
+        log("build update received:", updatedBuildData);        
 
         //update models in all arrays which the build already exists.
         [$scope.allBuilds, $scope.runningBuilds, $scope.failingBuilds].forEach(function(buildArray){
@@ -91,26 +88,26 @@ window.MainCtrl = function($scope) {
         // handle running build.
         if(updatedBuildData.state === "running") {          
           if(typeof $scope.runningBuilds[updatedBuildData.id] == "undefined") {            
-            console.log("detected a new running build.");
+            log("detected a new running build.");
             $scope.runningBuilds[updatedBuildData.id] = updatedBuildData;
           }
         } else { //build is not running.
 
           // build is no longer running.  removing it from running builds.
           if($scope.runningBuilds[updatedBuildData.id]) {
-            console.log("removing build from running list:", updatedBuildData);
+            log("removing build from running list:", updatedBuildData);
             delete $scope.runningBuilds[updatedBuildData.id];
           }
 
           // handling processing pass/fail state.
           if(updatedBuildData.status == "FAILURE") {
             if(typeof $scope.failingBuilds[updatedBuildData.id] == "undefined") {
-              console.log("detected new failing build");
+              log("detected new failing build");
               $scope.failingBuilds[updatedBuildData.id] = updatedBuildData;
             } 
           } else {
             if($scope.failingBuilds[updatedBuildData.id]) {
-              console.log("removing no longer failing build from failures list", updatedBuildData);
+              log("removing no longer failing build from failures list", updatedBuildData);
               delete $scope.failingBuilds[updatedBuildData.id];
             }            
           }
@@ -147,7 +144,7 @@ window.MainCtrl = function($scope) {
 
 
 function updateTestStatus($scope) {
-  console.log("updating test state and status");
+  log("updating test state and status");
   
   if(Object.keys($scope.runningBuilds).length == 0) {
     $scope.testsRunning = false;
@@ -165,7 +162,7 @@ function updateTestStatus($scope) {
 
 
 function updateInspirationalPoster($scope){
-  console.log("updating inspirational image");
+  log("updating inspirational image");
   socket.get('/images',{}, function (response) {
       $scope.$apply(function() {
       var randomIndex = Math.floor(Math.random() * response.successImages.length);

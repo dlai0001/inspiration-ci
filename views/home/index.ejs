@@ -82,7 +82,29 @@
                 		</tr>
                 	</table>
                 </div>
-                
+                <div class="text-center item build-status-box" ng-repeat="build in runningBuilds">
+                    <table class="center" data-model="{{build.id}}">
+                        <tr>
+                            <td>
+                                <img class="running-builds-img center" src="/images/loadingwheel.gif"></img>&nbsp;&nbsp;&nbsp;&nbsp;<br/>
+                                <span class="center" ng-if="build.percentComplete < 100">
+                                    {{build.percentComplete}}%
+                                </span>
+                                <span class="center" ng-if="build.percentComplete >= 100">
+                                    build overtime
+                                </span>
+                            </td>
+                            <td>
+                                <h2>{{build.project}}</h2>
+                                <h1>{{build.name}}</h1>
+                                <h3><a href="{{build.webUrl}}" target="_new">
+                                    Build {{build.version}} Running
+                                </a></h3>
+                            </td>                           
+                        </tr>
+                    </table>
+                </div>
+
             </div><!-- /.carousel-inner -->
         </div>        
 		<!-- /Carousel -->   
