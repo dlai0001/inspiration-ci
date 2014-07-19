@@ -67,6 +67,8 @@ window.MainCtrl = function($scope) {
     });   
   });
 
+  var carousel
+
   socket.on("message", _.bind(function(data){
     $scope.$apply(function() {
 
@@ -118,7 +120,10 @@ window.MainCtrl = function($scope) {
         setTimeout(function(){
           if($('#running-build-carousel .item.active').length < 1) {
             try {
-              $('#running-build-carousel .item:first').addClass('active');
+              // try to repair the carousel's state by adding an active item and resetting it.
+              $('#running-build-carousel .item:first').addClass('active');              
+              $("#running-build-carousel").carousel("pause").removeData();
+              $("#running-build-carousel").carousel("cycle");
             } catch(e) {
               //do nothing.
             }
