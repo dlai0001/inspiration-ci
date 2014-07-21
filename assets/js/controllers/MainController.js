@@ -1,33 +1,23 @@
 
 window.MainCtrl = function($scope) {
 
+  
   $scope.testsPassed = true;
   $scope.testsRunning = false;
   $scope.inspirationalPic = "/images/success/success3.jpg";
   
-  $scope.runningBuilds = {};
-  $scope.failingBuilds = {};
-  $scope.allBuilds = {};  
-  
+  $scope.allBuilds = [];
+    
 
   log("getting initial project statuses");
   socket.get('/build',{}, function (response) {    
     $scope.$apply(function() {
-      log("socket response:", response);
 
-      //create build models in an indexed array.
       for(var i=0; i < response.length; i++) {
         var buildInfo = response[i];
-        $scope.allBuilds[buildInfo.id] = buildInfo;
-
-        if(buildInfo.status == "FAILURE") {
-          $scope.failingBuilds[buildInfo.id] = buildInfo;
-        }
-
-        if(buildInfo.state === "running") {
-         $scope.runningBuilds[buildInfo.id] = buildInfo; 
-        }
+        updateModelsWithBuildStatus(buildInfo, $scope);
       }
+
       updateTestStatus($scope); 
     });   
   });
@@ -36,9 +26,6 @@ window.MainCtrl = function($scope) {
   // process socket messages.
   socket.on("message", _.bind(function(data){
     $scope.$apply(function() {
-
-      // Update our scope with our updated model.
-      log("where's here", data);
 
       if(data.model === "build"){              
         var updatedBuildData = data.data;
@@ -62,68 +49,30 @@ window.MainCtrl = function($scope) {
 
 function processBuildEntryUpdate(updatedBuildData, $scope) {
   log("build update received:", updatedBuildData);        
-
-  //update models in all arrays which the build already exists.
-  [$scope.allBuilds, $scope.runningBuilds, $scope.failingBuilds].forEach(function(buildArray){
-    if(buildArray[updatedBuildData.id]) {
-      updateClientSideModel(buildArray[updatedBuildData.id], updatedBuildData);
-    }
-  });
-
-  // handle running builds.
-  if(updatedBuildData.state === "running") {          
-    if(typeof $scope.runningBuilds[updatedBuildData.id] == "undefined") {            
-      log("detected a new running build.");
-      $scope.runningBuilds[updatedBuildData.id] = updatedBuildData;
-    }
-  } else { //build is not running.
-
-    // build is no longer running.  removing it from running builds.
-    if($scope.runningBuilds[updatedBuildData.id]) {
-      log("removing build from running list:", updatedBuildData);
-      delete $scope.runningBuilds[updatedBuildData.id];
-    }
-
-    // handling processing pass/fail state.
-    if(updatedBuildData.status == "FAILURE") {
-      if(typeof $scope.failingBuilds[updatedBuildData.id] == "undefined") {
-        log("detected new failing build");
-        $scope.failingBuilds[updatedBuildData.id] = updatedBuildData;
-      } 
-    } else {
-      if($scope.failingBuilds[updatedBuildData.id]) {
-        log("removing no longer failing build from failures list", updatedBuildData);
-        delete $scope.failingBuilds[updatedBuildData.id];
-      }            
-    }
-  }
-  runningbuildsCarouselMaintainenceTask();
-  
+  updateModelsWithBuildStatus(updatedBuildData, $scope);
   updateTestStatus($scope);
+  runningbuildsCarouselMaintainenceTask();
 }
 
 function updateTestStatus($scope) {
   log("updating test state and status");
-  
-  if(Object.keys($scope.runningBuilds).length == 0) {
-    $scope.testsRunning = false;
-  } else {
-    $scope.testsRunning = true;
-  }
+  var countRunningBuilds = $.grep($scope.allBuilds, function(item){
+    return item.state === "running";
+  }).length;
+  $scope.testsRunning = countRunningBuilds > 0;
 
-  if(Object.keys($scope.failingBuilds).length == 0) {
-    $scope.testsPassed = true;
-  } else {
-    $scope.testsPassed = false;
-  }
-  
+  var countFailingBuilds = $.grep($scope.allBuilds, function(item){
+    return item.status === "FAILURE";
+  }).length;
+  $scope.testsPassed = countFailingBuilds == 0;  
 }
 
 
 function updateInspirationalPoster($scope){
   log("updating inspirational image");
+  // Gets a random image from our list of success images, and sets the url.
   socket.get('/images',{}, function (response) {
-      $scope.$apply(function() {
+    $scope.$apply(function() {
       var randomIndex = Math.floor(Math.random() * response.successImages.length);
       var newInspirationalImg = response.successImages[randomIndex];
       $scope.inspirationalPic = newInspirationalImg;
@@ -132,8 +81,24 @@ function updateInspirationalPoster($scope){
 }
 
 function updateClientSideModel(clientModel, update) {
+  // updates single model by updating all the keyvalues in that model.
   for(var key in update) {
     clientModel[key] = update[key];
+  }
+}
+
+function updateModelsWithBuildStatus(update, $scope) {
+  // query to see if we can find a model with matching build.id
+  var queryTargetModelResults = $.grep($scope.allBuilds, function(currentItem) {
+    return currentItem.id === update.id;
+  });
+  
+  if(queryTargetModelResults.length>0) {
+    // Check if model already exists, update it.
+    updateClientSideModel(queryTargetModelResults[0], update);
+  } else {
+    // if not, push a new model.
+    $scope.allBuilds.push(update);
   }
 }
 
@@ -145,7 +110,7 @@ setTimeout(function(){
 }, 5000);
 
 
-function runningbuildsCarouselMaintainenceTask() {
+function runningbuildsCarouselMaintainenceTask() {  
   // Make sure we always have at least 1 active running build.
   // so not to break the bootstrap carousel.
   setTimeout(function(){

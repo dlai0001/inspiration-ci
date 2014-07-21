@@ -5,8 +5,10 @@
     	<img class="col-lg-4 col-lg-offset-4" ng-src="{{inspirationalPic}}"/>    	
 
 		<!--  Carousel of all Tests when passing -->  
-        <div id="all-build-carousel" class="carousel slide" ng-show="!testsRunning"><!-- class of slide for animation -->
+        <div id="all-build-carousel" class="carousel slide" ng-show="!testsRunning">
             <div class="carousel-inner">
+
+
             	<div class="active text-center item build-status-box">
             		<h1>Inspiration CI<h1>
             	</div>
@@ -19,7 +21,9 @@
 	                	</a></h3>
                 	</div>
                 </div>
-                
+
+
+
             </div><!-- /.carousel-inner -->
         </div>        
 		<!-- /Carousel -->
@@ -28,7 +32,10 @@
     <!-- Failing Tests Display -->
 	<div ng-show="!testsPassed">
     	<h1>Failing Builds</h1>
-		<div ng-repeat="build in failingBuilds" class="build-status-box">    			
+
+
+		<div class="build-status-box" 
+        ng-repeat="build in allBuilds | filter:{status:'FAILURE'}">
 			<table class="center" data-model="{{build.id}}">
         		<tr>
         			<td>
@@ -52,6 +59,8 @@
         		</tr>
         	</table>  			
 		</div>
+
+
     </div>   
 
 	<!-- Running Tests     -->
@@ -60,7 +69,10 @@
     	<!--  Carousel -->  
         <div id="running-build-carousel" class="carousel slide"><!-- class of slide for animation -->
             <div class="carousel-inner">
-                <div class="text-center item build-status-box" ng-repeat="build in runningBuilds">
+
+
+                <div class="text-center item build-status-box" 
+                    ng-repeat="build in allBuilds | filter:{state:'running'}">
                 	<table class="center" data-model="{{build.id}}">
                 		<tr>
                 			<td>
@@ -82,6 +94,7 @@
                 		</tr>
                 	</table>
                 </div>
+
 
             </div><!-- /.carousel-inner -->
         </div>        
