@@ -67,72 +67,19 @@ window.MainCtrl = function($scope) {
     });   
   });
 
-  var carousel
 
+  // process socket messages.
   socket.on("message", _.bind(function(data){
     $scope.$apply(function() {
 
       // Update our scope with our updated model.
       log("where's here", data);
 
-      if(data.model === "build"){      
-        
+      if(data.model === "build"){              
         var updatedBuildData = data.data;
-        log("build update received:", updatedBuildData);        
+        processBuildEntryUpdate(updatedBuildData, $scope)                  
+      }
 
-        //update models in all arrays which the build already exists.
-        [$scope.allBuilds, $scope.runningBuilds, $scope.failingBuilds].forEach(function(buildArray){
-          if(buildArray[updatedBuildData.id]) {
-            updateClientSideModel(buildArray[updatedBuildData.id], updatedBuildData);
-          }
-        });
-
-        // handle running build.
-        if(updatedBuildData.state === "running") {          
-          if(typeof $scope.runningBuilds[updatedBuildData.id] == "undefined") {            
-            log("detected a new running build.");
-            $scope.runningBuilds[updatedBuildData.id] = updatedBuildData;
-          }
-        } else { //build is not running.
-
-          // build is no longer running.  removing it from running builds.
-          if($scope.runningBuilds[updatedBuildData.id]) {
-            log("removing build from running list:", updatedBuildData);
-            delete $scope.runningBuilds[updatedBuildData.id];
-          }
-
-          // handling processing pass/fail state.
-          if(updatedBuildData.status == "FAILURE") {
-            if(typeof $scope.failingBuilds[updatedBuildData.id] == "undefined") {
-              log("detected new failing build");
-              $scope.failingBuilds[updatedBuildData.id] = updatedBuildData;
-            } 
-          } else {
-            if($scope.failingBuilds[updatedBuildData.id]) {
-              log("removing no longer failing build from failures list", updatedBuildData);
-              delete $scope.failingBuilds[updatedBuildData.id];
-            }            
-          }
-        }
-
-        // Make sure we always have at least 1 active running build.
-        // so not to break the bootstrap carousel.
-        setTimeout(function(){
-          if($('#running-build-carousel .item.active').length < 1) {
-            try {
-              // try to repair the carousel's state by adding an active item and resetting it.
-              $('#running-build-carousel .item:first').addClass('active');              
-              $("#running-build-carousel").carousel("pause").removeData();
-              $("#running-build-carousel").carousel("cycle");
-            } catch(e) {
-              //do nothing.
-            }
-          }
-        }, 1000);        
-        
-        updateTestStatus($scope);              
-      
-      } //end if 'build'
     });
     $scope.$digest();
   }, this)); //end of handling build updates.
@@ -147,6 +94,48 @@ window.MainCtrl = function($scope) {
 
 };
 
+
+function processBuildEntryUpdate(updatedBuildData, $scope) {
+  log("build update received:", updatedBuildData);        
+
+  //update models in all arrays which the build already exists.
+  [$scope.allBuilds, $scope.runningBuilds, $scope.failingBuilds].forEach(function(buildArray){
+    if(buildArray[updatedBuildData.id]) {
+      updateClientSideModel(buildArray[updatedBuildData.id], updatedBuildData);
+    }
+  });
+
+  // handle running builds.
+  if(updatedBuildData.state === "running") {          
+    if(typeof $scope.runningBuilds[updatedBuildData.id] == "undefined") {            
+      log("detected a new running build.");
+      $scope.runningBuilds[updatedBuildData.id] = updatedBuildData;
+    }
+  } else { //build is not running.
+
+    // build is no longer running.  removing it from running builds.
+    if($scope.runningBuilds[updatedBuildData.id]) {
+      log("removing build from running list:", updatedBuildData);
+      delete $scope.runningBuilds[updatedBuildData.id];
+    }
+
+    // handling processing pass/fail state.
+    if(updatedBuildData.status == "FAILURE") {
+      if(typeof $scope.failingBuilds[updatedBuildData.id] == "undefined") {
+        log("detected new failing build");
+        $scope.failingBuilds[updatedBuildData.id] = updatedBuildData;
+      } 
+    } else {
+      if($scope.failingBuilds[updatedBuildData.id]) {
+        log("removing no longer failing build from failures list", updatedBuildData);
+        delete $scope.failingBuilds[updatedBuildData.id];
+      }            
+    }
+  }
+  runningbuildsCarouselMaintainenceTask();
+  
+  updateTestStatus($scope);
+}
 
 function updateTestStatus($scope) {
   log("updating test state and status");
@@ -189,3 +178,21 @@ setTimeout(function(){
   $('#all-build-carousel').carousel({interval: 10000});   
   $('#running-build-carousel').carousel({interval: 10000});
 }, 5000);
+
+
+function runningbuildsCarouselMaintainenceTask() {
+  // Make sure we always have at least 1 active running build.
+  // so not to break the bootstrap carousel.
+  setTimeout(function(){
+    if($('#running-build-carousel .item.active').length < 1) {
+      try {
+        // try to repair the carousel's state by adding an active item and resetting it.
+        $('#running-build-carousel .item:first').addClass('active');
+        $("#running-build-carousel").carousel("pause").removeData();
+        $("#running-build-carousel").carousel("cycle");
+      } catch(e) {
+        //do nothing.
+      }
+    }
+  }, 1000);  
+}
