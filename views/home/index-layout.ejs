@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html ng-app>
+  <head>
+
+    <title>Homelayout Inspiration CI Build Radiator</title>
+
+    <!-- Viewport mobile tag for sensible mobile support -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+
+    <!-- JQuery -->
+    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+
+    <!-- BootStrap -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <!-- Angular -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.14/angular.min.js"></script>
+
+    <!-- Additional Styles -->
+    <link rel="stylesheet" href="/styles/style.css">    
+
+  </head><body>
+    <!-- Include the view file for the current controller/route -->
+    <%- body %>
+
+
+    <!--
+      Client-side Javascript
+      ========================
+    -->
+    <!-- Jquery Debounce/Throttle -->
+    <script type="text/javascript" src="/js/jquery-throttle-debounce.min.js"></script>
+
+    <!-- Bring in the socket.io client -->
+    <script type="text/javascript" src="/js/socket.io.js"></script>
+    <!-- then beef it up with some convenience logic for talking to Sails.js -->
+    <script type="text/javascript" src="/js/sails.io.js"></script>
+    
+    <!-- setup our angular app and dependencies -->
+    <script type="text/javascript" src="/js/main-app.js"></script>
+    <script type="text/javascript" src="/js/controllers/MainController.js"></script>
+
+
+    <!-- Your scripts here? -->
+    </body>
+</html>

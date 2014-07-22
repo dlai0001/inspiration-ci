@@ -1,5 +1,5 @@
 /**
- * EchoController
+ * HomeController
  *
  * @module      :: Controller
  * @description	:: A set of functions called `actions`.
@@ -17,21 +17,16 @@
 
 module.exports = {
     
-  index: function (req,res) {
-    // Get the value of a parameter
-    var param = req.param('message');
-
-    // Send a JSON response
-    res.json({
-      success: true,
-      message: param
-    });
+  // render our angular main app.
+  index: function(req, res) {
+  	res.view('home/index', {
+  		layout: 'home/index-layout'
+  	});
   },
-
 
   /**
    * Overrides for the settings in `config/controllers.js`
-   * (specific to EchoController)
+   * (specific to HomeController)
    */
   _config: {}
 

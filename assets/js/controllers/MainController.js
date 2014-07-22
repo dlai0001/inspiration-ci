@@ -24,7 +24,7 @@ window.MainCtrl = function($scope) {
 
 
   // process socket messages.
-  socket.on("message", _.bind(function(data){
+  socket.on("message", function(data){
     $scope.$apply(function() {
 
       if(data.model === "build"){              
@@ -34,7 +34,7 @@ window.MainCtrl = function($scope) {
 
     });
     $scope.$digest();
-  }, this)); //end of handling build updates.
+  }); //end of handling build updates.
 
 
   //change inspirational image every 30 seconds.
