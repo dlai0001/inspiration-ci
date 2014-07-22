@@ -1,0 +1,31 @@
+<!-- Failing Tests Display -->
+<div ng-show="!testsPassed">
+    <h1>Failing Builds</h1>
+
+
+    <div class="build-status-box" 
+    ng-repeat="build in allBuilds | filter:{status:'FAILURE'}">
+        <table class="center" data-model="{{build.id}}">
+            <tr>
+                <td>
+                    <img ng-if="build.state == 'running'" 
+                        class="running-builds-img center" 
+                        src="/images/loadingwheel.gif"></img>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<br/>
+                    <span class="center" ng-if="build.state == 'running'">
+                        {{build.percentComplete}}%
+                    </span>
+                </td>
+                <td>
+                    <h2>{{build.project}}</h2>
+                    <h1>{{build.name}}</h1>
+                    <h3><a href="{{build.webUrl}}" target="_new">
+                        Build {{build.version}} 
+                        <span ng-if="build.state != 'running'">[{{build.status}}]</span>
+                        <span ng-if="build.state == 'running'">Running...</span>
+                    </a></h3>
+                </td>
+            </tr>
+        </table>            
+    </div>
+</div>  

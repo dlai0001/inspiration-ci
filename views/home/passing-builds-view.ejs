@@ -1,0 +1,28 @@
+<div class="" ng-show="testsPassed">
+    <br/>
+    <img class="col-lg-4 col-lg-offset-4" ng-src="{{inspirationalPic}}"/>       
+
+    <!--  Carousel of all Tests when passing -->  
+    <div id="all-build-carousel" class="carousel slide" ng-show="!testsRunning">
+        <div class="carousel-inner">
+
+
+            <div class="active text-center item build-status-box">
+                <h1>Inspiration CI<h1>
+            </div>
+            <div class="text-center item build-status-box" ng-repeat="build in allBuilds">
+                <div data-model="{{build.id}}">
+                    <h2>{{build.project}}</h2>
+                    <h1>{{build.name}}</h1>
+                    <h3><a href="{{build.webUrl}}" target="_new">
+                        Build {{build.version}} [{{build.status}}]
+                    </a></h3>
+                </div>
+            </div>
+
+
+
+        </div><!-- /.carousel-inner -->
+    </div>        
+    <!-- /Carousel -->
+</div>
