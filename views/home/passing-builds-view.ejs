@@ -5,11 +5,7 @@
     <!--  Carousel of all Tests when passing -->  
     <div id="all-build-carousel" class="carousel slide" ng-show="!testsRunning">
         <div class="carousel-inner">
-
-
-            <div class="active text-center item build-status-box">
-                <h1>Inspiration CI<h1>
-            </div>
+            
             <div class="text-center item build-status-box" ng-repeat="build in allBuilds">
                 <div data-model="{{build.id}}">
                     <h2>{{build.project}}</h2>

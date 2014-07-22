@@ -19,7 +19,9 @@ window.MainCtrl = function($scope) {
       }
 
       updateTestStatus($scope); 
-    });   
+
+    });
+    initCarousels();    
   });
 
 
@@ -104,10 +106,11 @@ function updateModelsWithBuildStatus(update, $scope) {
 
 //init carousels. - setting init in the future to give models to load 
 // before starting the carousels.
-setTimeout(function(){
+function initCarousels(){
+  $('#all-build-carousel .item:first').addClass('active');
   $('#all-build-carousel').carousel({interval: 10000});   
   $('#running-build-carousel').carousel({interval: 10000});
-}, 5000);
+}
 
 
 function runningbuildsCarouselMaintainenceTask() {  
