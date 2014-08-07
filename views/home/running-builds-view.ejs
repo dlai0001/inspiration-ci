@@ -6,7 +6,7 @@
 
 
             <div class="text-center item build-status-box" 
-                ng-repeat="build in allBuilds | filter:{state:'running'}">
+                ng-repeat="build in allBuilds | filter:{state:'running', status:'!FAILURE'}">
                 <table class="center" data-model="{{build.id}}">
                     <tr>
                         <td>
