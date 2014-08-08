@@ -242,8 +242,10 @@ function updateBuildStatusForBuild(currentBuildModel, callback) {
 		+ "/builds?count=1";
 
 	rest.get(getBuildStatusUrl).on('complete', function(data){
-		var lastBuildOfProject = data.builds.build[0].$;
-		updateModel(currentBuildModel, lastBuildOfProject);
+		if (data.builds.$.count !== '0') {
+			var lastBuildOfProject = data.builds.build[0].$;
+			updateModel(currentBuildModel, lastBuildOfProject);
+		}
 	});
 
 	if(callback)
