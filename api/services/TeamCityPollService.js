@@ -48,8 +48,6 @@ module.exports = {
 				processAllBuildTypesTask.resolve();
 			});		
 		});
-		
-
 
 		//Task to iterate through each buildtype.
 		var doneProcessingAllProjectsTask = new Deferred();
@@ -233,8 +231,11 @@ function updateBuildStatusForBuild(currentBuildModel, callback) {
 		+ "/builds?count=1";
 
 	rest.get(getBuildStatusUrl).on('complete', function(data){
-		var lastBuildOfProject = data.builds.build[0].$;
-		updateModel(currentBuildModel, lastBuildOfProject);
+		if (data.builds.$.count !== '0') {
+            var lastBuildOfProject = data.builds.build[0].$;
+            updateModel(currentBuildModel, lastBuildOfProject);
+        }
+
 	});
 
 	if(callback)
@@ -253,3 +254,10 @@ var scheduleCleanUpOldRunningBuilds = debounce(function cleanUpOldRunningBuilds(
 		}		
 	});
 },20000);
+
+function savePubBuildModel(buildModel) {
+	buildModel.save(function(err, savedModel) {
+		console.log("model saved, publishing", savedModel);
+		Build.publishUpdate(savedModel.id, savedModel);
+	});
+}
