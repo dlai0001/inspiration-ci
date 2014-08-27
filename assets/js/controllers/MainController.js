@@ -33,9 +33,7 @@ window.MainCtrl = function($scope) {
         var updatedBuildData = data.data;
         processBuildEntryUpdate(updatedBuildData, $scope)                  
       }
-
-    });
-    $scope.$digest();
+    });    
   }); //end of handling build updates.
 
 
