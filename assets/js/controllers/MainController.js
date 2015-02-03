@@ -1,7 +1,6 @@
+angular.module('inspirationCi')
+  .controller('MainCtrl', function($scope) {
 
-window.MainCtrl = function($scope) {
-
-  
   $scope.testsPassed = true;
   $scope.testsRunning = false;
   $scope.inspirationalPic = "/images/success/success3.jpg";
@@ -44,7 +43,7 @@ window.MainCtrl = function($scope) {
     });    
   }, 30000);
 
-};
+});
 
 
 function processBuildEntryUpdate(updatedBuildData, $scope) {
@@ -125,5 +124,5 @@ function runningbuildsCarouselMaintainenceTask() {
         //do nothing.
       }
     }
-  }, 1000);  
+  }, 1000);
 }

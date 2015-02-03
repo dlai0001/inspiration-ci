@@ -25,3 +25,16 @@ function log () {
 
 })(window.io);
 
+
+/**
+ * @ngdoc overview
+ * @name angularSchedulerSpikeApp
+ * @description
+ * # angularSchedulerSpikeApp
+ *
+ * Main module of the application.
+ */
+angular
+  .module('inspirationCi', [])
+  .config(function () {    
+  });
