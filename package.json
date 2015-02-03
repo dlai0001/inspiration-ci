@@ -6,6 +6,7 @@
   "dependencies": {
     "debounce": "^1.0.0",
     "ejs": "0.8.4",
+    "express": "^4.11.2",
     "grunt": "0.4.1",
     "later": "^1.1.6",
     "moment": "^2.7.0",
