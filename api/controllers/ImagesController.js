@@ -43,6 +43,16 @@ module.exports = {
     });
   },
 
+  new: function(req, res) {
+    console.log("REQUEST OBJ FROM IMG ENDPT", req.method);
+
+    if( req.method === "POST") {
+      console.log("adding new image");
+    } else {
+      console.log("displaying new image form.");
+    }
+
+  },
 
   /**
    * Overrides for the settings in `config/controllers.js`

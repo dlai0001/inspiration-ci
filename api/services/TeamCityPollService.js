@@ -206,7 +206,11 @@ function updateModel(buildModel, updatedData, callback) {
 	buildModel.percentComplete = updatedData.percentageComplete;
 	buildModel.save(function(err, savedModel) {
 		console.log("model saved, publishing", savedModel);
-		Build.publishUpdate(savedModel.id, savedModel);
+		if(savedModel) {
+			Build.publishUpdate(savedModel.id, savedModel);
+		} else {
+			console.log("Warning: Model not saved for ", buildModel);
+		}
 	});
 
 	if(callback) {

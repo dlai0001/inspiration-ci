@@ -12,8 +12,8 @@
     "optimist": "0.3.4",
     "promised-io": "^0.3.4",
     "restler": "^3.2.2",
-    "sails": "0.9.16",
-    "sails-disk": "~0.9.0"
+    "sails": "^0.10.5",
+    "sails-disk": "^0.10.7"
   },
   "scripts": {
     "start": "node app.js",
