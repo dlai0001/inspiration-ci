@@ -16,6 +16,10 @@
 
     <!-- Angular -->
     <script src="vendor/angular/angular.js"></script>
+    <script src="vendor/angular-touch/angular-touch.js"></script>
+    <script src="vendor/angular-carousel/dist/angular-carousel.js"></script>
+    <link src="vendor/angular-carousel/dist/angular-carousel.css">
+
 
     <!-- Additional Styles -->
     <link rel="stylesheet" href="/styles/style.css">    
@@ -23,23 +27,6 @@
   </head><body>
     <!-- Include the view file for the current controller/route -->
     <%- body %>
-
-
-    <!--
-      Client-side Javascript
-      ========================
-    -->
-    <!-- Jquery Debounce/Throttle -->
-    <script type="text/javascript" src="/js/jquery-throttle-debounce.min.js"></script>
-
-    <!-- Bring in the socket.io client -->
-    <script type="text/javascript" src="/js/socket.io.js"></script>
-    <!-- then beef it up with some convenience logic for talking to Sails.js -->
-    <script type="text/javascript" src="/js/sails.io.js"></script>
-    
-    <!-- setup our angular app and dependencies -->        
-    <script type="text/javascript" src="/js/main-app.js"></script>
-    <script type="text/javascript" src="/js/controllers/MainController.js"></script>    
 
     <!-- Your scripts here? -->
     </body>

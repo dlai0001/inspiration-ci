@@ -38,3 +38,6 @@ angular
   .module('inspirationCi', [])
   .config(function () {    
   });
+
+// Add angular carousel dependency
+angular.module('inspirationCi', ['angular-carousel']);
