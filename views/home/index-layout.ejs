@@ -29,5 +29,21 @@
     <%- body %>
 
     <!-- Your scripts here? -->
+        <!--
+      Client-side Javascript
+      ========================
+    -->
+    <!-- Jquery Debounce/Throttle -->
+    <script type="text/javascript" src="/js/jquery-throttle-debounce.min.js"></script>
+
+    <!-- Bring in the socket.io client -->
+    <script type="text/javascript" src="/js/socket.io.js"></script>
+    <!-- then beef it up with some convenience logic for talking to Sails.js -->
+    <script type="text/javascript" src="/js/sails.io.js"></script>
+    
+    <!-- setup our angular app and dependencies -->        
+    <script type="text/javascript" src="/js/main-app.js"></script>
+    <script type="text/javascript" src="/js/controllers/MainController.js"></script>    
+
     </body>
 </html>
