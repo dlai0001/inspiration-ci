@@ -61,10 +61,6 @@ module.exports = {
 					})(buildModels[i]);
 				}
 				
-				setTimeout(function() {
-					doPeriodicBuildStatusUpdate(buildModels);
-				}, 2000);
-
 				doneProcessingAllProjectsTask.resolve();
 			});
 		
@@ -268,17 +264,4 @@ function savePubBuildModel(buildModel) {
 		console.log("model saved, publishing", savedModel);
 		Build.publishUpdate(savedModel.id, savedModel);
 	});
-}
-
-var buildMaintainenceCount = 0;
-function doPeriodicBuildStatusUpdate(allModels) {
-	currentModel = allModels[ buildMaintainenceCount % allModels.length];
-	console.log("Doing a periodic maintainence build status check", currentModel);
-
-	updateBuildStatusForBuild(currentModel);
-
-	setTimeout(function() {
-		buildMaintainenceCount++;
-		doPeriodicBuildStatusUpdate(allModels);
-	}, 5000);
 }
