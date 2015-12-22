@@ -62,7 +62,7 @@ module.exports = {
 				}
 				
 				setTimeout(function() {
-					doPeriodicBuildStatusUpdate(buildModels);
+					doPeriodicBuildStatusUpdate();
 				}, 2000);
 
 				doneProcessingAllProjectsTask.resolve();
@@ -271,14 +271,16 @@ function savePubBuildModel(buildModel) {
 }
 
 var buildMaintainenceCount = 0;
-function doPeriodicBuildStatusUpdate(allModels) {
-	currentModel = allModels[ buildMaintainenceCount % allModels.length];
-	console.log("Doing a periodic maintainence build status check", currentModel);
+function doPeriodicBuildStatusUpdate() {
+	Build.find().exec(function (err, allModels){
+		currentModel = allModels[ buildMaintainenceCount % allModels.length];
+		console.log("Doing a periodic maintainence build status check", currentModel);
 
-	updateBuildStatusForBuild(currentModel);
+		updateBuildStatusForBuild(currentModel);
 
-	setTimeout(function() {
-		buildMaintainenceCount++;
-		doPeriodicBuildStatusUpdate(allModels);
-	}, 5000);
+		setTimeout(function() {
+			buildMaintainenceCount++;
+			doPeriodicBuildStatusUpdate();
+		}, 5000);
+	});
 }
