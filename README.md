@@ -28,6 +28,14 @@ Launch server
 
 Open your browser to http://localhost:1337 and maximize the browser to full screen and see you builds displayed.
 
+Using docker:
+```
+docker build -t inspiration-ci .
+docker run -Pt inspiration-ci
+```
+
+Then run `docker ps` to find-out which port to use and launch your browser to http://localhost:PORT.
+
 
 About:
 
